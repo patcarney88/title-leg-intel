@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { getBillById } from "@/lib/data";
+import { getBillDraftContent } from "@/lib/ai-summary";
 
 interface BillPageProps {
   params: Promise<{ id: string }>;
@@ -13,6 +14,10 @@ export default async function BillPage({ params }: BillPageProps) {
   if (!bill) {
     notFound();
   }
+
+  const draftContent = await getBillDraftContent(bill);
+  const impactSummary = draftContent.impactSummary;
+  const guidanceDraft = draftContent.guidanceDraft;
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50 lg:px-10">
@@ -33,40 +38,60 @@ export default async function BillPage({ params }: BillPageProps) {
           <section className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
               <div className="flex items-center justify-between gap-4">
-                <h2 className="text-xl font-semibold text-white">Draft impact summary</h2>
+                <h2 className="text-xl font-semibold text-white">AI impact summary</h2>
                 <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-amber-200">
                   Draft with citations
                 </span>
               </div>
-              <p className="mt-4 text-base leading-8 text-slate-300">{bill.impactSummary.summary}</p>
-              <div className="mt-6">
-                <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Affected stakeholders</div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {bill.impactSummary.affectedStakeholders.map((stakeholder) => (
-                    <span key={stakeholder} className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-sm text-cyan-100">
-                      {stakeholder}
-                    </span>
-                  ))}
+              <p className="mt-4 text-base leading-8 text-slate-300">{impactSummary.summary}</p>
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Affected stakeholders</div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {impactSummary.affectedStakeholders.map((stakeholder) => (
+                      <span key={stakeholder} className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-sm text-cyan-100">
+                        {stakeholder}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Citations</div>
+                  <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                    {impactSummary.citations.map((citation) => (
+                      <li key={citation} className="rounded-2xl border border-white/10 bg-slate-900/60 px-3 py-2">
+                        {citation}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>
 
-            {bill.guidanceDraft ? (
+            {guidanceDraft ? (
               <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="text-xl font-semibold text-white">Compliance guidance draft</h2>
                   <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-amber-200">
-                    Draft guidance
+                    Draft - review required
                   </span>
                 </div>
-                <p className="mt-4 text-base leading-8 text-slate-300">{bill.guidanceDraft.summary}</p>
+                <p className="mt-4 text-base leading-8 text-slate-300">{guidanceDraft.summary}</p>
                 <ul className="mt-4 space-y-3 text-sm text-slate-300">
-                  {bill.guidanceDraft.recommendedActions.map((action) => (
+                  {guidanceDraft.recommendedActions.map((action) => (
                     <li key={action} className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3">
                       {action}
                     </li>
                   ))}
                 </ul>
+                <div className="mt-4 text-xs uppercase tracking-[0.2em] text-slate-500">Guidance citations</div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {guidanceDraft.citations.map((citation) => (
+                    <span key={citation} className="rounded-full border border-white/10 bg-slate-900/60 px-3 py-1 text-xs text-slate-300">
+                      {citation}
+                    </span>
+                  ))}
+                </div>
               </div>
             ) : null}
           </section>
@@ -77,11 +102,11 @@ export default async function BillPage({ params }: BillPageProps) {
               <dl className="mt-4 space-y-4 text-sm text-slate-300">
                 <div>
                   <dt className="text-slate-500">Current status</dt>
-                  <dd className="mt-1 font-medium text-white">{bill.status.replace("_", " ")}</dd>
+                  <dd className="mt-1 font-medium capitalize text-white">{bill.status.replace("_", " ")}</dd>
                 </div>
                 <div>
                   <dt className="text-slate-500">Freshness</dt>
-                  <dd className="mt-1">{bill.impactSummary.freshnessLabel}</dd>
+                  <dd className="mt-1">{impactSummary.freshnessLabel}</dd>
                 </div>
                 <div>
                   <dt className="text-slate-500">Source documents</dt>

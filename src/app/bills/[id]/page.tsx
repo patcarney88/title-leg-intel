@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { getBillById } from "@/lib/data";
+import { getBillById, getBillBySlug } from "@/lib/data";
 import { getBillDraftContent } from "@/lib/ai-summary";
 
 interface BillPageProps {
@@ -9,7 +9,7 @@ interface BillPageProps {
 
 export default async function BillPage({ params }: BillPageProps) {
   const { id } = await params;
-  const bill = getBillById(id);
+  const bill = getBillById(id) ?? getBillBySlug(id);
 
   if (!bill) {
     notFound();

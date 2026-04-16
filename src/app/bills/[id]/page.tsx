@@ -1,14 +1,14 @@
 import { notFound } from "next/navigation";
 
-import { getBillBySlug } from "@/lib/data";
+import { getBillById } from "@/lib/data";
 
 interface BillPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export default async function BillPage({ params }: BillPageProps) {
-  const { slug } = await params;
-  const bill = getBillBySlug(slug);
+  const { id } = await params;
+  const bill = getBillById(id);
 
   if (!bill) {
     notFound();

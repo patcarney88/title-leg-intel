@@ -5,6 +5,10 @@ export function getBills(): Bill[] {
   return seedBills;
 }
 
+export function getBillById(id: string): Bill | undefined {
+  return seedBills.find((bill) => bill.id === id);
+}
+
 export function getBillBySlug(slug: string): Bill | undefined {
   return seedBills.find((bill) => bill.slug === slug);
 }

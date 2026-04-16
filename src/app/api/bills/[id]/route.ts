@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 
-import { getBillBySlug } from "@/lib/data";
+import { getBillById } from "@/lib/data";
 
 interface RouteContext {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(_request: Request, { params }: RouteContext) {
-  const { slug } = await params;
-  const bill = getBillBySlug(slug);
+  const { id } = await params;
+  const bill = getBillById(id);
 
   if (!bill) {
     return NextResponse.json({ error: "Bill not found" }, { status: 404 });
